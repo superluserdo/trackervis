@@ -16,8 +16,6 @@ SDL_Renderer *renderer;
 SDL_Window *win;
 
 int visualise(SDL_Window *win, SDL_Renderer *renderer);
-int startscreen(SDL_Window *win, SDL_Renderer *renderer);
-void quitstart(SDL_Texture *startimgbg, SDL_Texture *startimgtext1, SDL_Texture *startimgtext2, SDL_Renderer *renderer);
 
 int main() {
 
@@ -37,13 +35,8 @@ int main() {
         if (SDL_Init(SDL_INIT_VIDEO) < 0)
                         return 1;
 
-	// start SDL with audio support
-	if(SDL_Init(SDL_INIT_AUDIO)==-1) {
-	    printf("SDL_Init: %s\n", SDL_GetError());
-	    exit(1);
-	}
 
-        win = SDL_CreateWindow("Tom's G-2 Track Visualiser", 100, 100, program.width, program.height, 0);
+        win = SDL_CreateWindow("G-2 Track Visualiser", 100, 100, program.width, program.height, 0);
 	//renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_ACCELERATED);
 	renderer = SDL_CreateRenderer(win, -1, 0);
 	if (renderer == NULL) {

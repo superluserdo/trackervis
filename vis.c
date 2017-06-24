@@ -5,15 +5,10 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 //#include <libconfig.h>
-//#include "libconfigbuild/include/libconfig.h"
 #include "libconfig.h"
 #include <math.h>
 #include "main.h"
 #include "vis.h"
-//#include "music.h"
-//#include "clock.h"
-//#include "helpers.h"
-//#include "gfxbuild/include/SDL2/SDL2_gfxPrimitives.h"
 #include "SDL2_gfxPrimitives.h"
 
 int generate_tally(int tally_array[MODULES][LAYERS][STRAWS], int colour_array[MODULES][LAYERS][STRAWS], config_setting_t *TE_setting, int Ntrackevents);
@@ -30,10 +25,7 @@ float Yvalue = 0;
 int alter_Y = 1;
 
 
-/* Time */
-
 extern struct program_struct program;
-extern struct time_struct timing;
 
 int visualise (SDL_Window *win, SDL_Renderer *renderer) {//(int argc, char *argv[]) {
 
@@ -64,16 +56,9 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer) {//(int argc, char *argv
 /* Status of the Visualiser */
 
 struct vis_struct vis = {
-	.gameover = 0,
 	.over = 0,
-	.pauselevel = 0,
-	.currentlevel = 1,
-	.totalnativedist = 0,
-	.partymode = 0,
-	//.lanes = &lanes
 };
 
-/* All Status */
 
 
 
@@ -149,27 +134,6 @@ struct vis_struct vis = {
 
 	textupdate(renderer, count, Yvalue, textsurfaces, texttextures, dejavu, coords);
 
-	/*	Event Handling	*/
-
-//	pthread_mutex_lock( &clock_mutex );
-	//level.pauselevel = 0;
-//	timing.pausetime = 0;
-//	timing.zerotime = SDL_GetTicks();
-//	timing.countbeats = 1;
-//	pthread_mutex_unlock( &clock_mutex );
-//	pthread_mutex_lock( &clock_mutex );
-//	pthread_mutex_unlock( &clock_mutex );
-//	pthread_cond_wait(&display_cond, &display_mutex);
-//	pthread_mutex_unlock(&display_mutex);
-
-	extern pthread_cond_t soundstatus_cond;
-	extern pthread_mutex_t soundstatus_mutex;
-
-	/* Snazzy Effects */
-
-	double angle = 0.0;
-	int colournum = 0;
-	int hue;
 
 	/* Create a Master Render Target */
 
@@ -417,15 +381,12 @@ struct vis_struct vis = {
 
 		}
 		SDL_RenderPresent(renderer);
-//		pthread_mutex_unlock(&display_mutex);
 
 //		SDL_SetRenderTarget(renderer, texTarget);
 		alter_Y = 0;
 		SDL_Delay(16);
 		change = 0;
 	}
-
-	//	SDL_DestroyRenderer(renderer);
 
 		quitvis(renderer, count, dejavu);
 
@@ -440,22 +401,11 @@ struct vis_struct vis = {
 
 void quitvis(SDL_Renderer *renderer, int count, TTF_Font *dejavu) {
 
-//	for ( int i = 0; i < MAX_SOUNDS_LIST; i++ )
-//		soundchecklist[i] = 0;
 	SDL_SetRenderDrawColor(renderer, 200, 200, 200, 50);
 	if (dejavu) {
 		TTF_CloseFont(dejavu);
 	}
 	SDL_RenderClear(renderer);
-//	for (int i = 0; i < count; i++) {
-//		SDL_DestroyTexture(texttextures[i]);
-//	}
-//	pthread_cond_wait( &cond_end, &track_mutex);
-//	pthread_mutex_unlock( &track_mutex );
-//	SDL_DestroyTexture(Spriteimg);
-//	SDL_DestroyTexture(texTarget);
-//	timing.countbeats = 0;
-//	timing.currentbeat = 0;
 }
 
 
@@ -486,7 +436,6 @@ int geom_init(float strawgeometry[MODULES][LAYERS][STRAWS][2][3], float XZrel[MO
 	 * coordinates and lowercase (x, y) for program
 	 * coordinates.
 	 */
-	//printf("mid: %f,    %f\n", Xmid, Zmid);
 
 	for (int imodule = 0; imodule < 3; imodule ++) {
 		for (int ilayer = 0; ilayer < 4; ilayer ++) {
@@ -537,7 +486,7 @@ int textupdate(SDL_Renderer *renderer, int count, float Yvalue, SDL_Surface *tex
 		fg.b = 100;
 		textsurfaces[1] = TTF_RenderText_Solid(dejavu, coords[1].text, fg);
 		if (textsurfaces[1] == NULL) {
-			printf("darn\n");
+			printf("Could not render text to surface\n");
 		}
 
 		texttextures[1] = SDL_CreateTextureFromSurface(renderer, textsurfaces[1]);
@@ -556,15 +505,12 @@ int generate_tally(int tally_array[MODULES][LAYERS][STRAWS], int colour_array[MO
 		for (int j = 0; j < config_setting_length(hits_setting); j++) {
 			config_setting_t *hit_setting = config_setting_get_elem(hits_setting, j);
 			int module, layer, straw;
-//		printf("%d\n", j);
-		//printf("%d\n",config_setting_length(hits_setting) );
 			config_setting_lookup_int(event_setting, "module", &module); 
 			config_setting_lookup_int(hit_setting, "layer", &layer);
 			config_setting_lookup_int(hit_setting, "straw", &straw);
 			module--;
 			layer--;
 			straw--;
-//		printf("Module: %d, Layer: %d, Straw: %d\n", module, layer, straw);
 			tally_array[module][layer][straw]++;
 			total++;
 		}
