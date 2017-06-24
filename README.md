@@ -37,6 +37,7 @@ To run the track visualiser:
 
 ## Usage
 
+|			|						|
 |---------------|-------------------------------|
 |ESC		|Quit program.			|
 |UP/DN Arrows	|Zoom in/out.			|
@@ -46,7 +47,7 @@ To run the track visualiser:
 |L/R Arrows	|Change event number.		|
 |T		|Toggle heat tally.		|
 
-##Syntax
+## Syntax
 
 `trackevents.txt` is written to by `./TestStraws` in libconfig syntax, then parsed by the libconfig library in `./trackervis`. The file contains one list named `trackevents`. Each list element in `trackevents` contains `module`, `hitnum`, `Ybest`, a list named `hits`, and a list named `line`. Each element of `hits` contains `X`, `Z`, `layer`, and `straw`. Each element of `line` contains `Z1`, `X1`, `Z2`, `X2`.
 
