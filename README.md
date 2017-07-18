@@ -18,17 +18,17 @@ To run the track visualiser:
 
 * Clone this repository to a local folder.
 
+* Overwrite `makefile` with `makefile-dynamic`.
+
 * Run `make && make clean` to compile.
 
-* Run ./trackervis` to run the program.
+* Run `./trackervis` to run the program.
 
 ### With `libconfig` and `libSDL2_gfx` statically linked
 
 * Ensure SDL2 and SDL2-devel are installed.
 
 * Clone this repository to a local folder.
-
-* Overwrite `makefile` with `makefile-dynamic`.
 
 * Run `make && make clean` to compile.
 
