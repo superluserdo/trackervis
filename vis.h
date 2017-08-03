@@ -22,11 +22,16 @@ struct coord {
 	SDL_Rect coord_rect;
 };
 
+struct textupdate_struct {
+	int eventindex;
+	float Yvalue;
+};
+
 int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename);
 
 int geom_init(float strawgeometry[num.modules][LAYERS][STRAWS][2][3], float XZrel[num.modules][LAYERS][STRAWS][2][2], float *diam, float diagram_centre[2], float *stereodiff, char **eventsFilenamePtr);
 
-int textupdate(SDL_Renderer *renderer, int count, float Yvalue, SDL_Surface *textsurfaces[count], SDL_Texture **texttextures, TTF_Font *dejavu, struct coord coords[count]);
+int textupdate(SDL_Renderer *renderer, int count, struct textupdate_struct text_info, SDL_Surface *textsurfaces[count], SDL_Texture **texttextures, TTF_Font *dejavu, struct coord coords[count]);
 
 void quitvis(SDL_Renderer *renderer, int count, TTF_Font *dejavu);
 

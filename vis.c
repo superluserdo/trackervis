@@ -23,21 +23,21 @@ int generate_tally(int tally_array[num.modules][num.layers][num.straws], int col
 
 /*	Global Variables	*/
 
-int change = 0;
-int alt = 0;
-int tally_mode = 0;
-int mousedown = 0;
-float topbotslider = 0;
-float stereodiff;
-float Yvalue = 0;
-int alter_Y = 1;
-
 
 extern struct program_struct program;
 
 int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 
 	/*	Some Variables	*/
+
+	int change = 0;
+	int alt = 0;
+	int tally_mode = 0;
+	int mousedown = 0;
+	float topbotslider = 0;
+	float stereodiff;
+	float Yvalue = 0;
+	int alter_Y = 1;
 
 	int screen_centre[2] = {program.width/2, program.height/2};
 	float diagram_zoom = 20.0;	
@@ -61,12 +61,11 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 		}
 	}
 
-/* Status of the Visualiser */
-
-struct vis_struct vis = {
-	.over = 0,
-};
-
+	/* Status of the Visualiser */
+	
+	struct vis_struct vis = {
+		.over = 0,
+	};
 
 
 
@@ -91,6 +90,12 @@ struct vis_struct vis = {
 	int eventindex = 0;
 	int Ntrackevents = config_setting_length(TE_setting);
 	printf("%d track events examined\n", Ntrackevents);
+
+	struct textupdate_struct text_info = {
+		.eventindex = eventindex,
+		.Yvalue = Yvalue
+	};
+
 
 	/*	Generate Tallied-Up Straw View in a Different Thread	*/
 
@@ -139,7 +144,9 @@ struct vis_struct vis = {
 	SDL_Surface *textsurfaces[count];
 	SDL_Texture *texttextures[count];
 
-	textupdate(renderer, count, Yvalue, textsurfaces, texttextures, dejavu, coords);
+	text_info.eventindex = eventindex;
+	text_info.Yvalue = Yvalue;
+	textupdate(renderer, count, text_info, textsurfaces, texttextures, dejavu, coords);
 
 
 	/* Create a Master Render Target */
@@ -213,7 +220,9 @@ struct vis_struct vis = {
 							Yvalue = -4.55;
 						}
 					}
-					textupdate(renderer, count, Yvalue, textsurfaces, texttextures, dejavu, coords);
+					text_info.eventindex = eventindex;
+					text_info.Yvalue = Yvalue;
+					textupdate(renderer, count, text_info, textsurfaces, texttextures, dejavu, coords);
 				}
 				else {
 					if (e.wheel.y > 0) {	
@@ -255,7 +264,9 @@ struct vis_struct vis = {
 			if (alter_Y) {
 				config_setting_lookup_float(event_setting, "Ybest", &tmp);
 				Yvalue = (float)tmp;
-				textupdate(renderer, count, Yvalue, textsurfaces, texttextures, dejavu, coords);
+				text_info.eventindex = eventindex;
+				text_info.Yvalue = Yvalue;
+				textupdate(renderer, count, text_info, textsurfaces, texttextures, dejavu, coords);
 			}
 	
 			if (!tally_mode) {
@@ -483,16 +494,21 @@ int geom_init(float strawgeometry[num.modules][num.layers][num.straws][2][3], fl
 	}
 }			
 
-int textupdate(SDL_Renderer *renderer, int count, float Yvalue, SDL_Surface *textsurfaces[count], SDL_Texture *texttextures[count], TTF_Font *dejavu, struct coord coords[count]) {
+int textupdate(SDL_Renderer *renderer, int count, struct textupdate_struct text_info, SDL_Surface *textsurfaces[count], SDL_Texture *texttextures[count], TTF_Font *dejavu, struct coord coords[count]) {
 
-	char buf[256];
+	float Yvalue = text_info.Yvalue;
+	int eventindex = text_info.eventindex;
+
+	char buf[count][256];
+
+	snprintf(buf[0], 256, "Y = %.2f cm", Yvalue);
+	snprintf(buf[1], 256, "Hit %d", eventindex);
 
 	for (int i = 0; i < count; i++) {
 
-		snprintf(buf, 256, "Y = %.2f cm", Yvalue);
-		coords[i].text = buf;
-		coords[i].length = strlen(buf);
-		coords[i].coord_rect.w = 30 * coords[0].length;
+		coords[i].text = buf[i];
+		coords[i].length = strlen(buf[i]);
+		coords[i].coord_rect.w = 30 * coords[i].length;
 		coords[i].coord_rect.h= 50;
 	}
 		coords[0].coord_rect.x = program.width - coords[0].coord_rect.w;
