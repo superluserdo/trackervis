@@ -11,7 +11,15 @@
 #include "vis.h"
 #include "SDL2_gfxPrimitives.h"
 
-int generate_tally(int tally_array[MODULES][LAYERS][STRAWS], int colour_array[MODULES][LAYERS][STRAWS], config_setting_t *TE_setting, int Ntrackevents);
+int num_modules = 30;
+
+struct num_struct num = {
+	.modules = 3,
+	.layers = 4,
+	.straws = 32,
+};
+
+int generate_tally(int tally_array[num.modules][num.layers][num.straws], int colour_array[num.modules][num.layers][num.straws], config_setting_t *TE_setting, int Ntrackevents);
 
 /*	Global Variables	*/
 
@@ -27,27 +35,27 @@ int alter_Y = 1;
 
 extern struct program_struct program;
 
-int visualise (SDL_Window *win, SDL_Renderer *renderer) {//(int argc, char *argv[]) {
+int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 
 	/*	Some Variables	*/
 
 	int screen_centre[2] = {program.width/2, program.height/2};
 	float diagram_zoom = 20.0;	
 	float diam;
-	float strawgeometry[MODULES][LAYERS][STRAWS][2][3];
+	float strawgeometry[num.modules][num.layers][num.straws][2][3];
 							/*					 ^  ^			*/
 							/* bottom/top		_|  |_ x/y/z	*/
-	float XZrel[MODULES][LAYERS][STRAWS][2][2];
+	float XZrel[num.modules][num.layers][num.straws][2][2];
 	float diagram_centre[2];
 	float diagram_relative[2];
-	geom_init(strawgeometry, XZrel, &diam, diagram_centre, &stereodiff);
+	geom_init(strawgeometry, XZrel, &diam, diagram_centre, &stereodiff, &eventsFilename);
 	int canvas_offset[2] = {0};
-	int tally_array[MODULES][LAYERS][STRAWS];
-	int colour_array[MODULES][LAYERS][STRAWS];
+	int tally_array[num.modules][num.layers][num.straws];
+	int colour_array[num.modules][num.layers][num.straws];
 
-	for (int module = 0; module < MODULES; module++) {
-		for (int layer = 0; layer < LAYERS; layer++) {
-			for (int straw = 0; straw < STRAWS; straw++) {
+	for (int module = 0; module < num.modules; module++) {
+		for (int layer = 0; layer < num.layers; layer++) {
+			for (int straw = 0; straw < num.straws; straw++) {
 				tally_array[module][layer][straw] = 0;
 			}
 		}
@@ -70,9 +78,8 @@ struct vis_struct vis = {
 	const char *str;
 
 	config_init(&cfg);
-
 	/* Read the file. If there is an error, report it and exit. */
-	if(! config_read_file(&cfg, "trackevents.txt"))
+	if(! config_read_file(&cfg, eventsFilename))
 	{
 		fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
 		config_error_line(&cfg), config_error_text(&cfg));
@@ -109,7 +116,7 @@ struct vis_struct vis = {
 	/*	Text Information	*/
 
 
-	int count = 3;
+	int count = 2;
 
 	struct coord coords[count];
 	
@@ -255,9 +262,9 @@ struct vis_struct vis = {
 
 				/*	Draw Straw Geometry	*/
 				
-				for (int imodule = 0; imodule < MODULES; imodule ++) {
-					for (int ilayer = 0; ilayer < LAYERS; ilayer ++) {
-						for (int istraw = 0; istraw < STRAWS; istraw++) {
+				for (int imodule = 0; imodule < num.modules; imodule ++) {
+					for (int ilayer = 0; ilayer < num.layers; ilayer ++) {
+						for (int istraw = 0; istraw < num.straws; istraw++) {
 							for (int topbot = 0; topbot < 1; topbot++) {
 		
 								float x = XZrel[imodule][ilayer][istraw][topbot][1] * diagram_zoom + program.width/2 + canvas_offset[0];
@@ -278,7 +285,7 @@ struct vis_struct vis = {
 				}
 		
 
-				for (int i = 0; i < LAYERS; i++) {
+				for (int i = 0; i < num.layers; i++) {
 	
 						/*	Highlight Hit Straws	*/
 	
@@ -286,7 +293,15 @@ struct vis_struct vis = {
 						Sint16 xint, yint; 
 		
 						config_setting_t *hits_setting = config_setting_lookup(event_setting, "hits");
+						if (!hits_setting) {
+							printf("No data entry in '%s' for event #%d. Quitting.\n", eventsFilename, i + 1);
+							return 1;
+						}
 						config_setting_t *hit_setting = config_setting_get_elem(hits_setting, i);
+						if (!hit_setting) {
+							printf("No data entry in '%s' for layer %d in event #%d. Quitting.\n", eventsFilename, i + 1, eventindex + 1);
+							return 1;
+						}
 						int module, layer, straw;
 						config_setting_lookup_int(event_setting, "module", &module); 
 						config_setting_lookup_int(hit_setting, "layer", &layer);
@@ -350,14 +365,14 @@ struct vis_struct vis = {
 		
 				thickLineRGBA(renderer, x1, y1, x2, y2, 3, 0, 255, 0, 255);
 				circleColor(renderer, program.width/2, program.height/2, 3, 0xFF00FFFF);
-				for (int index = 1; index < 2; index++) 
+				for (int index = 0; index < count; index++) 
 					SDL_RenderCopy(renderer, texttextures[index], NULL, &coords[index].coord_rect);
 			}	
 
 			else if (tally_mode) {
-				for (int imodule = 0; imodule < MODULES; imodule ++) {
-					for (int ilayer = 0; ilayer < LAYERS; ilayer ++) {
-						for (int istraw = 0; istraw < STRAWS; istraw++) {
+				for (int imodule = 0; imodule < num.modules; imodule ++) {
+					for (int ilayer = 0; ilayer < num.layers; ilayer ++) {
+						for (int istraw = 0; istraw < num.straws; istraw++) {
 							for (int topbot = 0; topbot < 1; topbot++) {
 		
 								float x = XZrel[imodule][ilayer][istraw][topbot][1] * diagram_zoom + program.width/2 + canvas_offset[0];
@@ -409,7 +424,7 @@ void quitvis(SDL_Renderer *renderer, int count, TTF_Font *dejavu) {
 }
 
 
-int geom_init(float strawgeometry[MODULES][LAYERS][STRAWS][2][3], float XZrel[MODULES][LAYERS][STRAWS][2][2], float *diam, float diagram_centre[2], float *stereodiff) {
+int geom_init(float strawgeometry[num.modules][num.layers][num.straws][2][3], float XZrel[num.modules][num.layers][num.straws][2][2], float *diam, float diagram_centre[2], float *stereodiff, char **eventsFilenamePtr) {
 		
 	*diam = 0.5;
 	float theta = 7.5*PI/180;
@@ -437,9 +452,9 @@ int geom_init(float strawgeometry[MODULES][LAYERS][STRAWS][2][3], float XZrel[MO
 	 * coordinates.
 	 */
 
-	for (int imodule = 0; imodule < 3; imodule ++) {
-		for (int ilayer = 0; ilayer < 4; ilayer ++) {
-			for (int istraw = 0; istraw < 32; istraw++) {
+	for (int imodule = 0; imodule < num.modules; imodule ++) {
+		for (int ilayer = 0; ilayer < num.layers; ilayer ++) {
+			for (int istraw = 0; istraw < num.straws; istraw++) {
 
 					/*	X	*/
 
@@ -471,32 +486,40 @@ int geom_init(float strawgeometry[MODULES][LAYERS][STRAWS][2][3], float XZrel[MO
 int textupdate(SDL_Renderer *renderer, int count, float Yvalue, SDL_Surface *textsurfaces[count], SDL_Texture *texttextures[count], TTF_Font *dejavu, struct coord coords[count]) {
 
 	char buf[256];
-	int numtest = 1000;
-	snprintf(buf, 256, "Y = %.2f cm", Yvalue);
-		coords[1].text = buf;
-		coords[1].length = strlen(buf);
-		coords[1].coord_rect.w = 30 * coords[1].length;
-		coords[1].coord_rect.h= 50;
-		coords[1].coord_rect.x = program.width - coords[1].coord_rect.w;
+
+	for (int i = 0; i < count; i++) {
+
+		snprintf(buf, 256, "Y = %.2f cm", Yvalue);
+		coords[i].text = buf;
+		coords[i].length = strlen(buf);
+		coords[i].coord_rect.w = 30 * coords[0].length;
+		coords[i].coord_rect.h= 50;
+	}
+		coords[0].coord_rect.x = program.width - coords[0].coord_rect.w;
+		coords[0].coord_rect.y = program.height - coords[0].coord_rect.h;
+
+		coords[1].coord_rect.x = 0;//program.width - coords[1].coord_rect.w;
 		coords[1].coord_rect.y = program.height - coords[1].coord_rect.h;
 
 		SDL_Color fg;
 		fg.r = 100;
 		fg.g = 100;
 		fg.b = 100;
-		textsurfaces[1] = TTF_RenderText_Solid(dejavu, coords[1].text, fg);
-		if (textsurfaces[1] == NULL) {
+
+	for (int i = 0; i < count; i++) {
+		textsurfaces[i] = TTF_RenderText_Solid(dejavu, coords[i].text, fg);
+		if (textsurfaces[i] == NULL) {
 			printf("Could not render text to surface\n");
 		}
 
-		texttextures[1] = SDL_CreateTextureFromSurface(renderer, textsurfaces[1]);
-	
+		texttextures[i] = SDL_CreateTextureFromSurface(renderer, textsurfaces[i]);
 
+	}
 
 	return 0;
 }
 
-int generate_tally(int tally_array[MODULES][LAYERS][STRAWS], int colour_array[MODULES][LAYERS][STRAWS], config_setting_t *TE_setting, int Ntrackevents) {
+int generate_tally(int tally_array[num.modules][num.layers][num.straws], int colour_array[num.modules][num.layers][num.straws], config_setting_t *TE_setting, int Ntrackevents) {
 
 	int total = 0;
 	for (int i = 0; i < Ntrackevents; i++) {
@@ -516,18 +539,18 @@ int generate_tally(int tally_array[MODULES][LAYERS][STRAWS], int colour_array[MO
 		}
 	}
 	int maxstraw;
-	for (int module = 0; module < MODULES; module++) {
-		for (int layer = 0; layer < LAYERS; layer++) {
-			for (int straw = 0; straw < STRAWS; straw++) {
+	for (int module = 0; module < num.modules; module++) {
+		for (int layer = 0; layer < num.layers; layer++) {
+			for (int straw = 0; straw < num.straws; straw++) {
 				if (tally_array[module][layer][straw] > maxstraw)
 					maxstraw = tally_array[module][layer][straw];
 			}
 		}
 	}
 	float ratio = 255.0/maxstraw;
-	for (int module = 0; module < MODULES; module++) {
-		for (int layer = 0; layer < LAYERS; layer++) {
-			for (int straw = 0; straw < STRAWS; straw++) {
+	for (int module = 0; module < num.modules; module++) {
+		for (int layer = 0; layer < num.layers; layer++) {
+			for (int straw = 0; straw < num.straws; straw++) {
 				colour_array[module][layer][straw] = 255 - (int) (tally_array[module][layer][straw] * ratio);
 			}
 		}

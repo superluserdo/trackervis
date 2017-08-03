@@ -15,9 +15,8 @@ struct program_struct program = {
 SDL_Renderer *renderer;
 SDL_Window *win;
 
-int visualise(SDL_Window *win, SDL_Renderer *renderer);
 
-int main() {
+int main(int argc, char **argv) {
 
 	printf(
 		"--------------------------------------------------------\n"
@@ -28,7 +27,26 @@ int main() {
 		"Libraries:		SDL2		dynamic\n"
 		"			SDL2_gfx	static\n"
 		"			libconfig	static\n"
-		"--------------------------------------------------------\n");
+		"--------------------------------------------------------\n\n");
+
+	FILE *tevents;
+	char *eventsFilename;
+	if (argc > 1) {
+		eventsFilename = argv[1];
+	}
+	else {
+		eventsFilename = "trackevents.txt";
+	}
+
+	tevents = fopen(eventsFilename, "r");
+	if (tevents == NULL) {
+		printf( "Could not open track event file '%s'.\n"
+				"You need the file 'trackevents.txt' in the current folder,\n"
+				"or specify a different file to read as an argument.\n\n",
+				eventsFilename);
+		return 1;
+	}
+
 	SDL_Window *win = NULL;
         SDL_Renderer *renderer = NULL;
 	// Initialize SDL.
@@ -52,7 +70,8 @@ int main() {
 		}
 	}
 
-	int returncode = visualise(win, renderer);
+	int returncode = visualise(win, renderer, eventsFilename);
+	printf("test3\n");
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);

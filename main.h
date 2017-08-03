@@ -10,7 +10,7 @@ struct grid_struct {
 } grid;
 
 
-/* Status of the Level */
+/* Status of the Visualiser */
 
 struct vis_struct {
 	int over;
@@ -24,4 +24,4 @@ struct program_struct {
 };
 
 
-int visualise(SDL_Window *win, SDL_Renderer *renderer);
+int visualise(SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename);
