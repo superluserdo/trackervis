@@ -29,16 +29,11 @@ struct textupdate_struct {
 
 int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename);
 
-int geom_init(float strawgeometry[num.modules][LAYERS][STRAWS][2][3], float XZrel[num.modules][LAYERS][STRAWS][2][2], float *diam, float diagram_centre[2], float *stereodiff, char **eventsFilenamePtr);
+int geom_init(float strawgeometry[num.modules][LAYERS][STRAWS][2][3], float XZrel[num.modules][LAYERS][STRAWS][2][2], float *diam, float diagram_centre[2], float *stereodiff);
+
+int generate_tally(int tally_array[num.modules][num.layers][num.straws], int colour_array[num.modules][num.layers][num.straws], config_setting_t *TE_setting, int Ntrackevents);
 
 int textupdate(SDL_Renderer *renderer, int count, struct textupdate_struct text_info, SDL_Surface *textsurfaces[count], SDL_Texture **texttextures, TTF_Font *dejavu, struct coord coords[count]);
 
 void quitvis(SDL_Renderer *renderer, int count, TTF_Font *dejavu);
 
-/* Threading */
-
-extern pthread_mutex_t display_mutex;
-extern pthread_mutex_t clock_mutex;
-extern pthread_cond_t display_cond;
-extern pthread_cond_t cond_end;
-extern pthread_mutex_t track_mutex; 

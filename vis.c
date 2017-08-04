@@ -11,22 +11,41 @@
 #include "vis.h"
 #include "SDL2_gfxPrimitives.h"
 
-int num_modules = 30;
-
-struct num_struct num = {
-	.modules = 3,
-	.layers = 4,
-	.straws = 32,
-};
-
-int generate_tally(int tally_array[num.modules][num.layers][num.straws], int colour_array[num.modules][num.layers][num.straws], config_setting_t *TE_setting, int Ntrackevents);
+struct num_struct num;
 
 /*	Global Variables	*/
-
 
 extern struct program_struct program;
 
 int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
+
+	/* 	Initialisation	*/
+
+	/* Setup Track Event File */
+	config_t evts;
+
+	config_init(&evts);
+	/* Read the file. If there is an error, report it and exit. */
+	if(! config_read_file(&evts, eventsFilename))
+	{
+		fprintf(stderr, "%s:%d - %s\n", config_error_file(&evts),
+		config_error_line(&evts), config_error_text(&evts));
+		config_destroy(&evts);
+		return(EXIT_FAILURE);
+	}
+
+	/* Set up basic module layout specified in trackevents file */
+	config_setting_t *layout_setting = config_lookup(&evts, "layout");
+	config_setting_lookup_int(layout_setting, "modules", &num.modules);
+	config_setting_lookup_int(layout_setting, "layers", &num.layers);
+	config_setting_lookup_int(layout_setting, "straws", &num.straws);
+	printf("%d, %d, %d\n", num.modules, num.layers, num.straws);
+
+	config_setting_t *TE_setting = config_lookup(&evts, "trackevents");
+	int eventindex = 0;
+	int Ntrackevents = config_setting_length(TE_setting);
+	printf("%d track events examined\n", Ntrackevents);
+
 
 	/*	Some Variables	*/
 
@@ -43,13 +62,29 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 	float diagram_zoom = 20.0;	
 	float diam;
 	float strawgeometry[num.modules][num.layers][num.straws][2][3];
-							/*					 ^  ^			*/
-							/* bottom/top		_|  |_ x/y/z	*/
+										/*					 ^  ^			*/
+										/* bottom/top		_|  |_ x/y/z	*/
 	float XZrel[num.modules][num.layers][num.straws][2][2];
 	float diagram_centre[2];
 	float diagram_relative[2];
-	geom_init(strawgeometry, XZrel, &diam, diagram_centre, &stereodiff, &eventsFilename);
+	geom_init(strawgeometry, XZrel, &diam, diagram_centre, &stereodiff);
 	int canvas_offset[2] = {0};
+
+	/* Status of the Visualiser */
+	
+	struct vis_struct vis = {
+		.over = 0,
+	};
+
+	struct textupdate_struct text_info = {
+		.eventindex = eventindex,
+		.Yvalue = Yvalue
+	};
+
+
+
+	/*	Generate Tallied-Up Straw View */
+
 	int tally_array[num.modules][num.layers][num.straws];
 	int colour_array[num.modules][num.layers][num.straws];
 
@@ -60,44 +95,6 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 			}
 		}
 	}
-
-	/* Status of the Visualiser */
-	
-	struct vis_struct vis = {
-		.over = 0,
-	};
-
-
-
-	/* 	Initialisation	*/
-
-	/* Setup Config File */
-	config_t cfg;
-	config_setting_t *setting;
-	const char *str;
-
-	config_init(&cfg);
-	/* Read the file. If there is an error, report it and exit. */
-	if(! config_read_file(&cfg, eventsFilename))
-	{
-		fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
-		config_error_line(&cfg), config_error_text(&cfg));
-		config_destroy(&cfg);
-		return(EXIT_FAILURE);
-	}
-
-	config_setting_t *TE_setting = config_lookup(&cfg, "trackevents");
-	int eventindex = 0;
-	int Ntrackevents = config_setting_length(TE_setting);
-	printf("%d track events examined\n", Ntrackevents);
-
-	struct textupdate_struct text_info = {
-		.eventindex = eventindex,
-		.Yvalue = Yvalue
-	};
-
-
-	/*	Generate Tallied-Up Straw View in a Different Thread	*/
 
 	generate_tally(tally_array, colour_array, TE_setting, Ntrackevents);
 
@@ -435,7 +432,7 @@ void quitvis(SDL_Renderer *renderer, int count, TTF_Font *dejavu) {
 }
 
 
-int geom_init(float strawgeometry[num.modules][num.layers][num.straws][2][3], float XZrel[num.modules][num.layers][num.straws][2][2], float *diam, float diagram_centre[2], float *stereodiff, char **eventsFilenamePtr) {
+int geom_init(float strawgeometry[num.modules][num.layers][num.straws][2][3], float XZrel[num.modules][num.layers][num.straws][2][2], float *diam, float diagram_centre[2], float *stereodiff) {
 		
 	*diam = 0.5;
 	float theta = 7.5*PI/180;
