@@ -17,7 +17,7 @@ struct num_struct num;
 
 extern struct program_struct program;
 
-int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
+int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts) {
 
 	/* 	Initialisation	*/
 
@@ -26,8 +26,10 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 
 	config_init(&evts);
 	/* Read the file. If there is an error, report it and exit. */
-	if(! config_read_file(&evts, eventsFilename))
+	if(! config_read_file(&evts, opts->eventsFilename))
 	{
+		printf("vis.c couldn't find the trackevent file"
+				" even though main.c could. That's a bit odd...\n");	
 		fprintf(stderr, "%s:%d - %s\n", config_error_file(&evts),
 		config_error_line(&evts), config_error_text(&evts));
 		config_destroy(&evts);
@@ -39,12 +41,11 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 	config_setting_lookup_int(layout_setting, "modules", &num.modules);
 	config_setting_lookup_int(layout_setting, "layers", &num.layers);
 	config_setting_lookup_int(layout_setting, "straws", &num.straws);
-	printf("%d, %d, %d\n", num.modules, num.layers, num.straws);
 
 	config_setting_t *TE_setting = config_lookup(&evts, "trackevents");
 	int eventindex = 0;
 	int Ntrackevents = config_setting_length(TE_setting);
-	printf("%d track events examined\n", Ntrackevents);
+	printf("%d track events examined inside %d modules\n", Ntrackevents, num.modules);
 
 
 	/*	Some Variables	*/
@@ -78,10 +79,8 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 
 	struct textupdate_struct text_info = {
 		.eventindex = eventindex,
-		.Yvalue = Yvalue
+		.Yvalue = Yvalue,
 	};
-
-
 
 	/*	Generate Tallied-Up Straw View */
 
@@ -247,7 +246,7 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 			}
 		}
 
-		/* The real business */
+		/* Time to render */
 
 		if (change) {
 	
@@ -296,18 +295,17 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 				for (int i = 0; i < num.layers; i++) {
 	
 						/*	Highlight Hit Straws	*/
-	
 						float Xrel, Zrel, x, y;
 						Sint16 xint, yint; 
 		
 						config_setting_t *hits_setting = config_setting_lookup(event_setting, "hits");
 						if (!hits_setting) {
-							printf("No data entry in '%s' for event #%d. Quitting.\n", eventsFilename, i + 1);
+							printf("No data entry in '%s' for event #%d. Quitting.\n", opts->eventsFilename, i + 1);
 							return 1;
 						}
 						config_setting_t *hit_setting = config_setting_get_elem(hits_setting, i);
 						if (!hit_setting) {
-							printf("No data entry in '%s' for layer %d in event #%d. Quitting.\n", eventsFilename, i + 1, eventindex + 1);
+							printf("No data entry in '%s' for layer %d in event #%d. Quitting.\n", opts->eventsFilename, i + 1, eventindex + 1);
 							return 1;
 						}
 						int module, layer, straw;
@@ -373,8 +371,11 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 		
 				thickLineRGBA(renderer, x1, y1, x2, y2, 3, 0, 255, 0, 255);
 				circleColor(renderer, program.width/2, program.height/2, 3, 0xFF00FFFF);
-				for (int index = 0; index < count; index++) 
-					SDL_RenderCopy(renderer, texttextures[index], NULL, &coords[index].coord_rect);
+				for (int index = 0; index < count; index++) {
+					if (opts->onoffs[index]) {
+						SDL_RenderCopy(renderer, texttextures[index], NULL, &coords[index].coord_rect);
+					}
+				}
 			}	
 
 			else if (tally_mode) {
@@ -403,6 +404,8 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename) {
 			}
 
 		}
+
+		/* Finally, display the rendered frame */
 		SDL_RenderPresent(renderer);
 
 //		SDL_SetRenderTarget(renderer, texTarget);
@@ -491,7 +494,9 @@ int geom_init(float strawgeometry[num.modules][num.layers][num.straws][2][3], fl
 	}
 }			
 
-int textupdate(SDL_Renderer *renderer, int count, struct textupdate_struct text_info, SDL_Surface *textsurfaces[count], SDL_Texture *texttextures[count], TTF_Font *dejavu, struct coord coords[count]) {
+int textupdate(SDL_Renderer *renderer, int count, 
+struct textupdate_struct text_info, SDL_Surface *textsurfaces[count], 
+SDL_Texture *texttextures[count], TTF_Font *dejavu, struct coord coords[count]) {
 
 	float Yvalue = text_info.Yvalue;
 	int eventindex = text_info.eventindex;
@@ -499,7 +504,7 @@ int textupdate(SDL_Renderer *renderer, int count, struct textupdate_struct text_
 	char buf[count][256];
 
 	snprintf(buf[0], 256, "Y = %.2f cm", Yvalue);
-	snprintf(buf[1], 256, "Hit %d", eventindex);
+	snprintf(buf[1], 256, "Event %d", eventindex);
 
 	for (int i = 0; i < count; i++) {
 
@@ -524,9 +529,8 @@ int textupdate(SDL_Renderer *renderer, int count, struct textupdate_struct text_
 		if (textsurfaces[i] == NULL) {
 			printf("Could not render text to surface\n");
 		}
-
+	
 		texttextures[i] = SDL_CreateTextureFromSurface(renderer, textsurfaces[i]);
-
 	}
 
 	return 0;

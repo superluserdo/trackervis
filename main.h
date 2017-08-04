@@ -23,5 +23,10 @@ struct program_struct {
 	int width, height;
 };
 
+struct opts_struct {
+	int onoffs[2];
+	char *eventsFilename;
+};
 
-int visualise(SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename);
+
+int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts);

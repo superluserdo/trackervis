@@ -16,6 +16,8 @@ struct num_struct {
 
 extern struct num_struct num;
 
+extern struct opts_struct opts;
+
 struct coord {
 	const char *text;
 	int length;
@@ -25,9 +27,10 @@ struct coord {
 struct textupdate_struct {
 	int eventindex;
 	float Yvalue;
+	int onoffs[2];
 };
 
-int visualise (SDL_Window *win, SDL_Renderer *renderer, char *eventsFilename);
+int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts);
 
 int geom_init(float strawgeometry[num.modules][LAYERS][STRAWS][2][3], float XZrel[num.modules][LAYERS][STRAWS][2][2], float *diam, float diagram_centre[2], float *stereodiff);
 

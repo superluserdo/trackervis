@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "main.h"
+#include "libconfig.h"
 //#include <libconfig.h>
 
 //extern struct time_struct timing;
@@ -29,23 +30,62 @@ int main(int argc, char **argv) {
 		"			libconfig	static\n"
 		"--------------------------------------------------------\n\n");
 
+	/* Check for program conf file, use defaults if it doesn't exist */
+
+	struct opts_struct opts;
+
+	config_t conf;
+	config_init(&conf);
+	int defaults = 0;
+
+	if (config_read_file(&conf, "trackervis.conf")) {
+
+		config_setting_t *onoffs = config_lookup(&conf, "onoffs");
+		if (onoffs) {
+			config_setting_lookup_int(onoffs, "Yvalue", &opts.onoffs[0]);
+			if (opts.onoffs[0] != 0 && opts.onoffs[0] != 1) {
+				defaults = 2;
+			}
+			config_setting_lookup_int(onoffs, "eventindex", &opts.onoffs[1]);
+			if (opts.onoffs[1] != 0 && opts.onoffs[1] != 1) {
+				defaults = 2;
+			}
+		}
+		else {
+			defaults = 2;
+		}
+	}
+	else {
+		defaults = 1;
+	}
+	if (defaults > 0) {
+		if (defaults == 1) {
+			printf("Couldn't find program config file 'trackervis.conf'.\n"
+					"Resorting to defaults.\n\n");
+		}
+		else if (defaults = 2) {
+			printf("Something isn't right about the config file trackervis.conf.\n"
+					"Resorting to defaults.\n\n");
+		}
+		opts.onoffs[0] = 1;
+		opts.onoffs[1] = 1;
+	}
 	/* Specify trackevents file and check if it exists */
 
 	FILE *tevents;
-	char *eventsFilename;
 	if (argc > 1) {
-		eventsFilename = argv[1];
+		opts.eventsFilename = argv[1];
 	}
 	else {
-		eventsFilename = "trackevents.txt";
+		opts.eventsFilename = "trackevents.txt";
 	}
 
-	tevents = fopen(eventsFilename, "r");
+	tevents = fopen(opts.eventsFilename, "r");
 	if (tevents == NULL) {
 		printf( "Could not open track event file '%s'.\n"
 				"You need the file 'trackevents.txt' in the current folder,\n"
 				"or specify a different file to read as an argument.\n\n",
-				eventsFilename);
+				opts.eventsFilename);
 		return 1;
 	}
 	fclose(tevents);
@@ -74,7 +114,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* Start the actual visualiser */
-	int returncode = visualise(win, renderer, eventsFilename);
+	int returncode = visualise(win, renderer, &opts);
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
