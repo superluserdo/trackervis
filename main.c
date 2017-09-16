@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include "SDL_inc.h"
+#include "other_inc.h"
 #include "main.h"
-#include "libconfig.h"
 //#include <libconfig.h>
 
 //extern struct time_struct timing;
@@ -21,9 +20,9 @@ int main(int argc, char **argv) {
 		"--------------------------------------------------------\n"
 		"tomh422826@gmail.com\n"
 		"\n"
-		"Libraries:		SDL2		dynamic\n"
-		"			SDL2_gfx	static\n"
-		"			libconfig	static\n"
+		"Libraries:		SDL2		\n"
+		"			SDL2_gfx	\n"
+		"			libconfig	\n"
 		"--------------------------------------------------------\n"
 		"UI changes can be made in 'trackervis.conf'\n\n");
 

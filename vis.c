@@ -1,15 +1,11 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
-//#include <libconfig.h>
-#include "libconfig.h"
+#include "SDL_inc.h"
+#include "other_inc.h"
 #include <math.h>
 #include "main.h"
 #include "vis.h"
-#include "SDL2_gfxPrimitives.h"
 
 struct num_struct num;
 

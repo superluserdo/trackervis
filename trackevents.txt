@@ -1,3 +1,10 @@
+layout = {
+
+	    modules = 3
+	    layers = 4
+	    straws = 32
+}
+
 trackevents = (
 
 	{
