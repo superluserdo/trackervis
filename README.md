@@ -67,3 +67,7 @@ To run the track visualiser:
 |-------->Z2	|float	|
 |-------->X2	|float	|
 |---->Ybest	|float	|
+
+## Other
+
+I have put in the option to change UI elements of the program from the file 'trackervis.conf'. It's only got four options right now though (2 UI features and x/y resolution).

@@ -8,27 +8,24 @@
 //#include <libconfig.h>
 
 //extern struct time_struct timing;
-struct program_struct program = {
-	.width = NATIVE_RES_X,
-	.height = NATIVE_RES_Y
-};
 
 SDL_Renderer *renderer;
 SDL_Window *win;
-
+struct program_struct program;
 
 int main(int argc, char **argv) {
 
 	printf(
 		"--------------------------------------------------------\n"
-		"|	G-2 Track Events Visualiser (Unfinished)	|\n"
+		"|	G-2 Track Events Visualiser							|\n"
 		"--------------------------------------------------------\n"
 		"tomh422826@gmail.com\n"
 		"\n"
 		"Libraries:		SDL2		dynamic\n"
 		"			SDL2_gfx	static\n"
 		"			libconfig	static\n"
-		"--------------------------------------------------------\n\n");
+		"--------------------------------------------------------\n"
+		"UI changes can be made in 'trackervis.conf'\n\n");
 
 	/* Check for program conf file, use defaults if it doesn't exist */
 
@@ -54,6 +51,18 @@ int main(int argc, char **argv) {
 		else {
 			defaults = 2;
 		}
+		config_setting_t *res_setting = config_lookup(&conf, "resolution");
+		if (res_setting) {
+			if (!config_setting_lookup_int(res_setting, "x", &opts.res.x)) {
+				defaults = 2;
+			}
+			if (!config_setting_lookup_int(res_setting, "y", &opts.res.y)) {
+				defaults = 2;
+			}
+		}
+		else {
+			defaults = 2;
+		}
 	}
 	else {
 		defaults = 1;
@@ -69,7 +78,13 @@ int main(int argc, char **argv) {
 		}
 		opts.onoffs[0] = 1;
 		opts.onoffs[1] = 1;
+		opts.res.x = 1366;
+		opts.res.y = 768;
 	}
+
+	program.width = opts.res.x;
+	program.height = opts.res.y;
+	
 	/* Specify trackevents file and check if it exists */
 
 	FILE *tevents;

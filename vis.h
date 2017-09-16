@@ -1,12 +1,4 @@
-#define IMAGE_PATH "image.png"
-#define SPRITE_SIZEX 32
-#define SPRITE_SIZEY 32
-//#define num.modules 3
-#define LAYERS 4
-#define STRAWS 32
 #define PI 3.1415926535
-
-extern int num_modules;
 
 struct num_struct {
 	int modules;
@@ -32,7 +24,7 @@ struct textupdate_struct {
 
 int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts);
 
-int geom_init(float strawgeometry[num.modules][LAYERS][STRAWS][2][3], float XZrel[num.modules][LAYERS][STRAWS][2][2], float *diam, float diagram_centre[2], float *stereodiff);
+int geom_init(float strawgeometry[num.modules][num.layers][num.straws][2][3], float XZrel[num.modules][num.layers][num.straws][2][2], float *diam, float diagram_centre[2], float *stereodiff);
 
 int generate_tally(int tally_array[num.modules][num.layers][num.straws], int colour_array[num.modules][num.layers][num.straws], config_setting_t *TE_setting, int Ntrackevents);
 

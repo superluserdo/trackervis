@@ -38,11 +38,28 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts
 
 	/* Set up basic module layout specified in trackevents file */
 	config_setting_t *layout_setting = config_lookup(&evts, "layout");
-	config_setting_lookup_int(layout_setting, "modules", &num.modules);
-	config_setting_lookup_int(layout_setting, "layers", &num.layers);
-	config_setting_lookup_int(layout_setting, "straws", &num.straws);
+	if (layout_setting == NULL) {
+		printf("Error looking up setting for 'layout'\n");
+		return EXIT_FAILURE;
+	}
+	if (!config_setting_lookup_int(layout_setting, "modules", &num.modules)) {
+		printf("Error looking up value for 'modules'\n");
+		return EXIT_FAILURE;
+	}
+	if (!config_setting_lookup_int(layout_setting, "layers", &num.layers)) {
+		printf("Error looking up value for 'layers'\n");
+		return EXIT_FAILURE;
+	}
+	if (!config_setting_lookup_int(layout_setting, "straws", &num.straws)) {
+		printf("Error looking up value for 'straws'\n");
+		return EXIT_FAILURE;
+	}
 
 	config_setting_t *TE_setting = config_lookup(&evts, "trackevents");
+	if (TE_setting == NULL) {
+		printf("Error looking up setting for 'trackevents'\n");
+		return EXIT_FAILURE;
+	}
 	int eventindex = 0;
 	int Ntrackevents = config_setting_length(TE_setting);
 	printf("%d track events examined inside %d modules\n", Ntrackevents, num.modules);
@@ -258,7 +275,10 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts
 			config_setting_t *event_setting = config_setting_get_elem(TE_setting, eventindex);
 			double tmp;
 			if (alter_Y) {
-				config_setting_lookup_float(event_setting, "Ybest", &tmp);
+				if (!config_setting_lookup_float(event_setting, "Ybest", &tmp)) {
+					printf("Error looking up value for 'Ybest'\n");
+					return EXIT_FAILURE;
+				}
 				Yvalue = (float)tmp;
 				text_info.eventindex = eventindex;
 				text_info.Yvalue = Yvalue;
@@ -309,9 +329,18 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts
 							return 1;
 						}
 						int module, layer, straw;
-						config_setting_lookup_int(event_setting, "module", &module); 
-						config_setting_lookup_int(hit_setting, "layer", &layer);
-						config_setting_lookup_int(hit_setting, "straw", &straw);
+						if (!config_setting_lookup_int(event_setting, "module", &module)) {
+							printf("Error looking up value for 'module'\n");
+							return EXIT_FAILURE;
+						}
+						if (!config_setting_lookup_int(hit_setting, "layer", &layer)) {
+							printf("Error looking up value for 'layer'\n");
+							return EXIT_FAILURE;
+						}
+						if (!config_setting_lookup_int(hit_setting, "straw", &straw)) {
+							printf("Error looking up value for 'straw'\n");
+							return EXIT_FAILURE;
+						}
 						module--;
 						layer--;
 						straw--;
@@ -329,9 +358,15 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts
 		
 						/*	Draw Actual Hit Points	*/
 	
-						config_setting_lookup_float(hit_setting, "X", &tmp);
+						if (!config_setting_lookup_float(hit_setting, "X", &tmp)) {
+							printf("Error looking up value for 'X'\n");
+							return EXIT_FAILURE;
+						}
 						Xrel = (float)tmp - diagram_centre[1];
-						config_setting_lookup_float(hit_setting, "Z", &tmp);
+						if (!config_setting_lookup_float(hit_setting, "Z", &tmp)) {
+							printf("Error looking up value for 'Z'\n");
+							return EXIT_FAILURE;
+						}
 						Zrel = (float)tmp - diagram_centre[0];
 						x = Zrel * diagram_zoom + program.width/2 + canvas_offset[0];
 						y = - Xrel * diagram_zoom + program.height/2 + canvas_offset[1];
@@ -347,13 +382,29 @@ int visualise (SDL_Window *win, SDL_Renderer *renderer, struct opts_struct *opts
 				int x1int, x2int, y1int, y2int;
 		
 				config_setting_t *line_setting = config_setting_lookup(event_setting, "line");
-				config_setting_lookup_float(line_setting, "Z1", &tmp);
+				if (!line_setting) {
+					printf("Error looking up setting for 'line'.\n");
+					return EXIT_FAILURE;
+				}
+				if(!config_setting_lookup_float(line_setting, "Z1", &tmp)) {
+					printf("Error looking up value for 'Z1'\n");
+					return EXIT_FAILURE;
+				}
 				Z1 = (float)tmp;
-				config_setting_lookup_float(line_setting, "X1", &tmp);
+				if(!config_setting_lookup_float(line_setting, "X1", &tmp)) {
+					printf("Error looking up value for 'X2'\n");
+					return EXIT_FAILURE;
+				}
 				X1 = (float)tmp;
-				config_setting_lookup_float(line_setting, "Z2", &tmp);
+				if(!config_setting_lookup_float(line_setting, "Z2", &tmp)) {
+					printf("Error looking up value for 'Z2'\n");
+					return EXIT_FAILURE;
+				}
 				Z2 = (float)tmp;
-				config_setting_lookup_float(line_setting, "X2", &tmp);
+				if(!config_setting_lookup_float(line_setting, "X2", &tmp)) {
+					printf("Error looking up value for 'X2'\n");
+					return EXIT_FAILURE;
+				}
 				X2 = (float)tmp;
 		
 				Z1rel = Z1 - diagram_centre[0];

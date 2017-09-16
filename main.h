@@ -26,6 +26,7 @@ struct program_struct {
 struct opts_struct {
 	int onoffs[2];
 	char *eventsFilename;
+	struct grid_struct res;
 };
 
 
