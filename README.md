@@ -4,35 +4,19 @@ Designed to read in a pre-analysed list of track events ("trackevents.txt") and 
 
 * Written in C.
 
-* Requires the `libSDL2` library.
-
-* `libconfig` and `libSDL2_gfx` libraries optional. Can be linked dynamically or statically.
+* Requires the `libSDL2`, `libconfig` and `libSDL2_gfx` libraries. These can be linked dynamically or locally.
 
 ## Installation
 
 To run the track visualiser:
 
-### With `libconfig` and `libSDL2_gfx` dynamically linked
-
-* Ensure SDL2, SDL2-devel, SDL2_gfx, and libconfig are installed.
-
 * Clone this repository to a local folder.
 
-* Overwrite `makefile` with `makefile-dynamic`.
+* To locally link libraries, type `git checkout all_local`
 
 * Run `make && make clean` to compile.
 
-* Run `./trackervis` to run the program.
-
-### With `libconfig` and `libSDL2_gfx` statically linked
-
-* Ensure SDL2 and SDL2-devel are installed.
-
-* Clone this repository to a local folder.
-
-* Run `make && make clean` to compile.
-
-* Run `LD_LIBRARY_PATH=lib ./trackervis` to run the program.
+* Run `./trackervis <trackevents file>` to run the program on a specified file.
 
 
 ## Usage
